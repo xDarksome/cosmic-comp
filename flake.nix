@@ -3,9 +3,16 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+
     parts.url = "github:hercules-ci/flake-parts";
+    parts.inputs.nixpkgs-lib.follows = "nixpkgs";
+
     crane.url = "github:ipetkov/crane";
+    crane.inputs.nixpkgs.follows = "nixpkgs";
+
     rust.url = "github:oxalica/rust-overlay";
+    rust.inputs.nixpkgs.follows = "nixpkgs";
+
     nix-filter.url = "github:numtide/nix-filter";
   };
 
@@ -53,6 +60,14 @@
 
             runtimeDependencies = with pkgs; [
               libglvnd # For libEGL
+              vulkan-loader
+              seatd
+              mesa # For libgbm
+
+              libxkbcommon
+              libinput
+              wayland
+              stdenv.cc.cc.lib
             ];
           };
 
@@ -68,9 +83,11 @@
           checks.cosmic-comp = cosmic-comp;
           packages.default = cosmic-comp;
 
-          devShells.default = pkgs.mkShell {
-            # Should there be packages here or use Nix purely for CI?
+          devShells.default = craneLib.devShell {
             LD_LIBRARY_PATH = lib.makeLibraryPath (__concatMap (d: d.runtimeDependencies) (__attrValues self'.checks));
+
+            # include build inputs
+            inputsFrom = [cosmic-comp];
           };
         };
     };
