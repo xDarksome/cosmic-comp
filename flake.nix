@@ -60,14 +60,6 @@
 
             runtimeDependencies = with pkgs; [
               libglvnd # For libEGL
-              vulkan-loader
-              seatd
-              mesa # For libgbm
-
-              libxkbcommon
-              libinput
-              wayland
-              stdenv.cc.cc.lib
             ];
           };
 
